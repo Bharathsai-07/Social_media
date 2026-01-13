@@ -24,11 +24,13 @@ const StoryModel = ({setShowModal,fetchStories}) => {
     const [previewUrl,setPreviewUrl]=useState(null)
 
     const handleMediaUpload=(e)=>{
-        const file=e.target.file?.[0];
-        if(file){
-            setMedia(file);
-            setPreviewUrl(URL.createObjectURL(file));
+        const file=e.target.files[0];
+        setMedia(file);
+        const reader=new FileReader();
+        reader.onload=()=>{
+            setPreviewUrl(reader.result);
         }
+        reader.readAsDataURL(file);
     }
 
     const handleCreateStory=async()=>{
