@@ -11,7 +11,8 @@ const Login = () => {
       
       {/*left side : branding*/}
       <div className='flex-1 flex flex-col items-start justify-between p-6 md:p-10 lg:pl-40'>
-        <img src={assets.logo} alt="" className='h-12 object-contain'/>
+        {/* <img src={assets.logo} alt="" className='h-12 object-contain'/> */}
+        <h1 className='flex align-center justify-center m-5 font-medium text-blue-700 text-xl'>Social Media</h1>
         <div>
           <div className='flex items-center gap-3 mb-4 max-md:mt-10'>
             <img src={assets.group_users} alt="" className='h-8 md:h-10'/>
