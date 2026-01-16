@@ -16,7 +16,7 @@ const Sidebar = ({sidebarOpen,setSidebarOpen}) => {
     sidebarOpen ? 'translate-x-0':'max-sm:-translate-x-full'} transition-all duration-300 ease-in-out`}>
         <div className='w-full'>
             {/* <img onClick={() => navigate('/')} src={assets.logo} className='w-26 ml-7 my-2 cursor-pointer' alt="" /> */}
-            <h1 className='flex align-center justify-center m-5 font-medium text-blue-700 text-xl'>Social Media</h1>
+            <h1 className='flex align-center px-5 justify-start m-5 font-medium text-blue-700 text-3xl'>Social Media</h1>
             <hr className='border-gray-300 mb-8'/>
             <MenuItems setSidebarOpen={setSidebarOpen}/>
             <Link to='/create-post' className='m-6 mx-4 px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg flex items-center justify-center gap-2'>
