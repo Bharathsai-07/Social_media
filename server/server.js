@@ -4,11 +4,14 @@ import 'dotenv/config'
 import connectDB from './configs/db.js'
 import { inngest, functions } from './inngest/index.js'
 import { serve } from 'inngest/express'
+import { clerkMiddleware } from '@clerk/express'
+import userRouter from './routes/userRoute.js'
 
 const app = express()
 
 app.use(express.json())
 app.use(cors())
+app.use(clerkMiddleware())
 
 let isConnected = false
 
@@ -25,6 +28,8 @@ app.use(async (req, res, next) => {
   }
 })
 
+app.use('/api/user', userRouter)
+
 app.get('/', (req, res) => {
   res.send('Server is Running')
 })
@@ -34,5 +39,10 @@ try {
 } catch (err) {
   console.error('❌ Inngest init failed:', err)
 }
+
+const PORT = process.env.PORT || 4000
+app.listen(PORT, () => {
+  console.log(`✅ Server running on port ${PORT}`)
+})
 
 export default app
