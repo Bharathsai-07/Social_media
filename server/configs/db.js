@@ -5,7 +5,7 @@ const connectDB =async()=>{
         mongoose.connection.on('connected',()=> console.log('Database connected'))
         await mongoose.connect(`${process.env.MONGODB_URL}/socialmedia`)
     }catch(error){
-        console.log;log(error.message)
+        console.log(error.message)
     }
 }
 

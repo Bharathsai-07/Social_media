@@ -6,6 +6,7 @@ import { inngest, functions } from './inngest/index.js'
 import { serve } from 'inngest/express'
 import { clerkMiddleware } from '@clerk/express'
 import userRouter from './routes/userRoute.js'
+import postRouter from './routes/postRoutes.js'
 
 const app = express()
 
@@ -29,6 +30,7 @@ app.use(async (req, res, next) => {
 })
 
 app.use('/api/user', userRouter)
+app.use('/api/post', postRouter)
 
 app.get('/', (req, res) => {
   res.send('Server is Running')

@@ -140,7 +140,7 @@ export const  followUser=async(req,res)=>{
 }
 
 // unfollow user 
-export const  unfollowUser=async(req,res)=>{
+export const unfollowUser=async(req,res)=>{
     try{
         const {userId}=await req.auth();
         const {id}=req.body;
