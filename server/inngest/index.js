@@ -1,6 +1,7 @@
 import { Inngest } from "inngest";
 import User from "../models/user.js";
 import Connection from "../models/Connection.js";
+import Story from "../models/Story.js";
 
 // Create a client to send and receive events
 export const inngest = new Inngest({ id: "socialmedia-app" });
@@ -113,10 +114,26 @@ const sendNewConnectionRequestReminder=inngest.createFunction(
 
     }
 )
+
+const deleteStory=inngest.createFunction(
+    {id:'story-delete'},
+    {event: 'app/story.delete'},
+    async({event,step})=>{
+        const{storyId}=event.data;
+        const in24Hours=new Date(Date.now()+24*60*60*1000)
+        await step.sleepUntil('wait-for-24-hours',in24Hours)
+        await step.run("delete-story",async()=>{
+            await Story.findByIdAndDelete(storyId)
+            return {message:"Story deleted"}
+        });
+    }
+)
+
 // Create an empty array where we'll export future Inngest functions
 export const functions = [
     syncUserCreation,
     syncUserUpdation,
     syncUserDeletion,
     sendNewConnectionRequestReminder,
+    deleteStory,
 ];
