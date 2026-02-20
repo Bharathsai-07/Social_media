@@ -6,10 +6,10 @@ import User from '../models/user.js';
 export const addPost=async(req,res)=>{
     try{
         const {userId}=req;
-        const {content,post_type}=req.body;
-        const images=req.files
+        const {content,post_type} = req.body;
+        const images = req.files || [];
 
-        let image_urls=[]
+        let image_urls = [];
 
         if(images.length){
             image_urls=await Promise.all(
@@ -34,11 +34,21 @@ export const addPost=async(req,res)=>{
                 })
             )
         }
+        // determine post_type if not provided by client
+        let finalPostType = post_type;
+        if (!finalPostType) {
+            if ((image_urls || []).length > 0) {
+                finalPostType = content ? 'text_with_image' : 'image';
+            } else {
+                finalPostType = 'text';
+            }
+        }
+
         await Post.create({
-            user:userId,
+            user: userId,
             content,
             image_urls,
-            post_type
+            post_type: finalPostType
         })
         res.json({success:true, message:'Post created successfully'})
     }catch(error){

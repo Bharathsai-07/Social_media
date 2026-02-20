@@ -14,7 +14,7 @@ import { store } from './app/store.js';
   }
 
 createRoot(document.getElementById('root')).render(
-    <ClerkProvider publishableKey={PUBLISHABLE_KEY}>
+    <ClerkProvider publishableKey={PUBLISHABLE_KEY} afterSignOutUrl="/" >
       <BrowserRouter>
       <Provider store={store}>
         <App />
