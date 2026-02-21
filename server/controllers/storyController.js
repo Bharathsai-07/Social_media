@@ -2,6 +2,7 @@ import imagekit from "../configs/imageKit.js";
 import FileSystem from 'fs';
 import Story from "../models/Story.js";
 import User from "../models/user.js";
+import Connection from "../models/Connection.js";
 import { inngest } from "../inngest/index.js";
 
 export const addUserStory =async(req,res)=>{
@@ -48,9 +49,25 @@ export const getStories =async(req,res)=>{
         const {userId} = req;
         const user = await User.findById(userId);
 
-        const connections = Array.isArray(user?.connections) ? user.connections : [];
+        // Get accepted connections (bidirectional)
+        const acceptedConnections = await Connection.find({
+            $or: [
+                { from_user_id: userId, status: 'accepted' },
+                { to_user_id: userId, status: 'accepted' }
+            ]
+        });
+
+        const connectedUserIds = acceptedConnections.map(conn => 
+            conn.from_user_id === userId ? conn.to_user_id : conn.from_user_id
+        );
+
+        // Get users that current user is following (and they follow back - mutual)
         const following = Array.isArray(user?.following) ? user.following : [];
-        const userIds = Array.from(new Set([userId, ...connections, ...following].filter(Boolean)));
+        const followers = Array.isArray(user?.followers) ? user.followers : [];
+        const mutualFollowing = following.filter(id => followers.includes(id));
+
+        // Combine: own stories + accepted connections + mutual following
+        const userIds = Array.from(new Set([userId, ...connectedUserIds, ...mutualFollowing].filter(Boolean)));
 
         const stories = await Story.find({ user: { $in: userIds } }).populate('user').sort({createdAt:-1});
 

@@ -1,11 +1,5 @@
 export const protect =async (req, res, next) => {
     try{
-        // Development: bypass auth for testing
-        if(process.env.NODE_ENV === 'development') {
-            req.userId = 'test-user-123'; // Use a test user ID
-            return next();
-        }
-
         const auth = await req.auth();
         const{userId}= auth;
         if(!userId){

@@ -1,22 +1,65 @@
-import React from 'react'
+import React, { useState } from 'react'
 import { dummyUserData } from '../assets/assets'
-import { MapPin, MessageCircle, Plus, UserPlus } from 'lucide-react'
-import { useSelector } from 'react-redux'
+import { MapPin, MessageCircle, Plus, UserPlus, Clock } from 'lucide-react'
+import { useDispatch, useSelector } from 'react-redux'
+import { useAuth } from '@clerk/clerk-react'
+import { useNavigate } from 'react-router-dom'
+import toast from 'react-hot-toast'
+import api from '../api/axios'
+import { fetchUser } from '../features/user/userSlice'
 
 const UserCard = ({user}) => {
 
+    const [isPending, setIsPending] = useState(false);
     const currentUser=useSelector((state)=>state.user.value)
+    const {getToken}=useAuth();
+    const dispatch=useDispatch();
+    const navigate=useNavigate();
 
     const handleFollow=async()=>{
-
+        try {
+            const {data}=await api.post('/api/user/follow',{id:user._id},{headers:{
+              Authorization:`Bearer ${await getToken()}`
+            }})
+            if(data.success){
+              toast.success(data.message);
+              dispatch(fetchUser(await getToken()));
+            }else{
+              toast.error(data.message);
+            }
+        } catch (error) {
+            toast.error(error.message);    
+        }
     }
-
+    
     const handleConnectionRequest=async()=>{
-
+        if(currentUser.connections.includes(user._id)){
+            return navigate(`messages/`+user._id)
+        }
+        if(isPending){
+            return toast.error("Connection request pending");
+        }
+        try {
+            const {data}=await api.post('/api/user/connect',{id:user._id},{headers:{
+              Authorization:`Bearer ${await getToken()}`
+            }})
+            if(data.success){
+              setIsPending(true);
+              toast.success(data.message);
+              dispatch(fetchUser(await getToken()));
+            }else{
+              if(data.message==="connection request pending"){
+                setIsPending(true);
+              }
+              toast.error(data.message);
+            }
+        } catch (error) {
+            toast.error(error.message);    
+        }
     }
-
-  return (
-    <div key={user._id} className='p-4 pt-6 flex flex-col justify-between w-72 shadow border border-gray-200 rounded-md'>
+    
+    return (
+        <div key={user._id} className='p-4 pt-6 flex flex-col justify-between w-72 shadow border border-gray-200 rounded-md'>
         <div className='text-center'>
             <img src={user.profile_picture} alt="" className='rounded-full w-16 shadow-md mx-auto'/>
             <p className='mt-4 font-semibold'>{user.full_name}</p>
@@ -37,10 +80,12 @@ const UserCard = ({user}) => {
                 <UserPlus className='w-4 h-4'/>{currentUser ?.following.includes(user._id)? 'Following':'Follow'}
             </button>
             {/* Connection request button */}
-            <button onClick={handleConnectionRequest} className='flex items-center justify-center w-16  border text-slate-500 group rounded-md cursor-pointer active:scale-95 transition'>
+            <button onClick={handleConnectionRequest} disabled={isPending || currentUser?.connections.includes(user._id)} className='flex items-center justify-center w-16  border text-slate-500 group rounded-md cursor-pointer active:scale-95 transition disabled:opacity-50 disabled:cursor-not-allowed'>
                 {
                     currentUser?.connections.includes(user._id) ?
                     <MessageCircle className='w-5 h-5 group-hover:scale-105 transition'/> :
+                    isPending ?
+                    <Clock className='w-5 h-5 group-hover:scale-105 transition'/> :
                     <Plus className='w-5 h-5 group-hover:scale-105 transition'/>
                 }
             </button>

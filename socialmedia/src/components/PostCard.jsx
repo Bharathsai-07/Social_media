@@ -6,6 +6,8 @@ import { dummyUserData } from '../assets/assets'
 import{useNavigate} from 'react-router-dom'
 import { useSelector } from 'react-redux'
 import { useAuth } from '@clerk/clerk-react'
+import api from '../api/axios'
+import toast from 'react-hot-toast'
 
 const PostCard = ({ post }) => {
 
@@ -16,10 +18,23 @@ const PostCard = ({ post }) => {
     const user = post.user || dummyUserData
     const {getToken}=useAuth();
     const handleLike=async ()=>{
-        if(likes.includes(currentUser.id)){
-            setLikes(likes.filter((like)=>like!==currentUser.id))
-        }else{
-            setLikes([...likes,currentUser.id])
+        try {
+            const {data}=await api.post(`/api/post/like`,{postId: post._id},{headers:{Authorization:`Bearer ${await getToken()}`}})
+
+            if(data.success){
+                toast.success(data.message)
+                setLikes(likes =>{
+                    if(likes.includes(currentUser.id)){
+                        return likes.filter((like)=>like!==currentUser.id)
+                    }else{
+                        return [...likes,currentUser.id]
+                    }
+                })
+            }else{
+                toast.error(data.message);
+            }
+        } catch (error) {
+            toast.error(error.message)
         }
     }
 

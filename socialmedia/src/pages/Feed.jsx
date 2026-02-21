@@ -14,20 +14,24 @@ const Feed = () => {
 
   const [feeds,setFeeds]=useState([])
   const [loading,setLoading]=useState(true)
+  const [error,setError]=useState(null)
   const {getToken}=useAuth();
 
   const fetchFeeds=async()=>{
     try {
       setLoading(true);
+      setError(null);
       const {data}=await api.get('/api/post/feed',{headers:{
         Authorization:`Bearer ${await getToken()}`
       }})
       if(data.success){
         setFeeds(data.posts);
       }else{
+        setError(data.message);
         toast.error(data.message);
       }
     } catch (error) {
+      setError(error.message);
       toast.error(error.message);
       
     }
@@ -44,9 +48,19 @@ const Feed = () => {
         <div>
           <StoriesBar />
           <div className='p-4 space-y-6'>
-            {feeds.map((post)=>(
-              <PostCard key={post._id} post={post}/>
-            ))}
+            {error ? (
+              <div className='text-center text-red-500 py-10'>
+                <p>Error loading feed: {error}</p>
+              </div>
+            ) : feeds.length === 0 ? (
+              <div className='text-center text-gray-500 py-10'>
+                <p>No posts yet. Follow or connect with people to see their posts!</p>
+              </div>
+            ) : (
+              feeds.map((post)=>(
+                <PostCard key={post._id} post={post}/>
+              ))
+            )}
           </div>
         </div>
         {/*Right sidebar - Suggestions and User Info*/}

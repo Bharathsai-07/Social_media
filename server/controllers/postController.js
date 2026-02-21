@@ -2,6 +2,7 @@ import fs from 'fs';
 import imagekit from '../configs/imageKit.js';
 import Post from '../models/Post.js';
 import User from '../models/user.js';
+import Connection from '../models/Connection.js';
 
 export const addPost=async(req,res)=>{
     try{
@@ -61,17 +62,41 @@ export const addPost=async(req,res)=>{
 export const getFeedPosts=async(req,res)=>{
     try{
         const {userId}=req;
+        
         const user=await User.findById(userId);
 
-        const connections = Array.isArray(user?.connections) ? user.connections : [];
+        if(!user){
+            // Fallback: return own posts even if user doc doesn't exist
+            const ownPosts = await Post.find({user: userId}).populate('user').sort({createdAt:-1});
+            return res.json({success:true, posts: ownPosts});
+        }
+
+        // Get accepted connections (bidirectional)
+        const acceptedConnections = await Connection.find({
+            $or: [
+                { from_user_id: userId, status: 'accepted' },
+                { to_user_id: userId, status: 'accepted' }
+            ]
+        });
+
+        const connectedUserIds = acceptedConnections.map(conn => 
+            conn.from_user_id === userId ? conn.to_user_id : conn.from_user_id
+        );
+
+        // Get users that current user is following (and they follow back - mutual)
         const following = Array.isArray(user?.following) ? user.following : [];
-        const userIds = Array.from(new Set([userId, ...connections, ...following].filter(Boolean)));
+        const followers = Array.isArray(user?.followers) ? user.followers : [];
+        const mutualFollowing = following.filter(id => followers.includes(id));
+
+        // Combine: own posts + accepted connections + mutual following
+        const userIds = Array.from(new Set([userId, ...connectedUserIds, ...mutualFollowing].filter(Boolean)));
+        
         const posts = await Post.find({user:{$in:userIds}}).populate('user').sort({createdAt:-1});
 
         res.json({success:true,posts})
 
     }catch(error){
-        console.log(error);
+        console.log('getFeedPosts error:', error);
         res.json({success:false, message:error.message})
     }
 }

@@ -1,6 +1,6 @@
 import express from "express";
 import { protect } from "../middleware/auth.js";
-import { getUserData, UpdateUserData, discoverUsers, followUser, unfollowUser, sendConnectionRequest, acceptConnectionRequest, getUserConnections, getUserProfiles } from "../controllers/userController.js";
+import { getUserData, UpdateUserData, discoverUsers, followUser, unfollowUser, sendConnectionRequest, acceptConnectionRequest, getUserConnections, getUserProfiles, searchUsers } from "../controllers/userController.js";
 import { upload } from "../configs/multer.js";
 import User from "../models/user.js";
 import { getUserRecentMessages } from "../controllers/messageController.js";
@@ -24,6 +24,7 @@ userRouter.post('/test-create', async (req, res) => {
 });
 
 userRouter.get('/data',protect,getUserData);
+userRouter.get('/search',protect,searchUsers);
 userRouter.post('/update',upload.fields([{name:'profile',maxCount:1},{name:'cover',maxCount:1}]),protect,UpdateUserData);
 userRouter.post('/discover',protect,discoverUsers);
 userRouter.post('/follow',protect,followUser);
