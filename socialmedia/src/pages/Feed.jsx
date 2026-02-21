@@ -68,8 +68,8 @@ const Feed = () => {
           <div className='max-w-xs bg-white text-xs p-4 rounded-md inline-flex flex-col gap-2 shadow'>
             <h3 className='text-slate-800 font-semibold'>Sponsered</h3>
             <img src={sponsored_img} alt="" className='w-75 h-50 rounded-md' />
-            <p className='text-slate-600'>Email marketing</p>
-            <p className='text-slate-400'>upercharge your marketing with a powerful, easy-to-use platform built for results.</p>
+            <p className='text-slate-600'>Social media</p>
+            <p className='text-slate-400'>Update your ideas to get in to the better platform.</p>
           </div>
           <RecentMessages/>
         </div>

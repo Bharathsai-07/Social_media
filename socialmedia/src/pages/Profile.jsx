@@ -18,6 +18,7 @@ const Profile = () => {
   const {profileId}=useParams()
   const [user,setUser]=useState(null)
   const [posts,setPosts]=useState([])
+  const [likedPosts,setLikedPosts]=useState([])
   const [activeTab,setActiveTab]=useState('posts')
   const [showEdit,setShowEdit]=useState(false)
 
@@ -31,6 +32,13 @@ const Profile = () => {
       if(data.success){
         setUser(data.profile);
         setPosts(data.posts);
+        // Fetch liked posts
+        const likedData = await api.get(`/api/post/liked/${userId}`, {
+          headers:{Authorization:`Bearer ${token}`}
+        });
+        if(likedData.data.success){
+          setLikedPosts(likedData.data.posts);
+        }
       }else{
         toast.error(data.message);
       }
@@ -90,6 +98,18 @@ const Profile = () => {
                         ))
                       ))
                     }
+                  </div>
+                )
+              }
+              {/* likes */}
+              {
+                activeTab === 'likes' && (
+                  <div className='mt-6 flex flex-col items-center gap-6'>
+                    {likedPosts.length === 0 ? (
+                      <p className='text-gray-500 text-center py-10'>No liked posts yet</p>
+                    ) : (
+                      likedPosts.map((post)=><PostCard key={post._id} post={post}/>)
+                    )}
                   </div>
                 )
               }

@@ -91,7 +91,10 @@ export const getFeedPosts=async(req,res)=>{
         // Combine: own posts + accepted connections + mutual following
         const userIds = Array.from(new Set([userId, ...connectedUserIds, ...mutualFollowing].filter(Boolean)));
         
-        const posts = await Post.find({user:{$in:userIds}}).populate('user').sort({createdAt:-1});
+        const posts = await Post.find({user:{$in:userIds}})
+            .populate('user')
+            .populate('comments.user','full_name username profile_picture')
+            .sort({createdAt:-1});
 
         res.json({success:true,posts})
 
@@ -119,6 +122,68 @@ export const likePost=async(req,res)=>{
             res.json({success:true,message:'Post liked'})
 
         }
+
+    }catch(error){
+        console.log(error);
+        res.json({success:false, message:error.message})
+    }
+}
+
+//add comment
+export const addComment=async(req,res)=>{
+    try{
+        const {userId}=req;
+        const {postId,text}=req.body;
+
+        const post =await Post.findById(postId);
+        if(!post){
+            return res.json({success:false,message:'Post not found'})
+        }
+
+        post.comments.push({
+            user:userId,
+            text
+        })
+        await post.save();
+        
+        const updatedPost = await Post.findById(postId).populate('comments.user','full_name username profile_picture');
+        res.json({success:true,message:'Comment added',comments:updatedPost.comments})
+
+    }catch(error){
+        console.log(error);
+        res.json({success:false, message:error.message})
+    }
+}
+
+//get comments
+export const getComments=async(req,res)=>{
+    try{
+        const {postId}=req.params;
+
+        const post =await Post.findById(postId).populate('comments.user','full_name username profile_picture');
+        if(!post){
+            return res.json({success:false,message:'Post not found'})
+        }
+
+        res.json({success:true,comments:post.comments})
+
+    }catch(error){
+        console.log(error);
+        res.json({success:false, message:error.message})
+    }
+}
+
+//get user liked posts
+export const getUserLikedPosts=async(req,res)=>{
+    try{
+        const {userId}=req.params;
+
+        const posts=await Post.find({likes_count: userId})
+            .populate('user')
+            .populate('comments.user','full_name username profile_picture')
+            .sort({createdAt:-1});
+
+        res.json({success:true,posts})
 
     }catch(error){
         console.log(error);
